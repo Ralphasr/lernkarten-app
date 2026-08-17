@@ -68,7 +68,7 @@ def text_bar_chart(values: dict[str, int], *, width: int = 24) -> list[str]:
     """Render a proportional, zero-safe terminal bar chart.
 
     >>> text_bar_chart({'A': 2, 'B': 1}, width=4)
-    ['A | ████ 2', 'B | ██   1']
+    ['A | #### 2', 'B | ##   1']
     """
     if width < 1:
         msg = "width muss mindestens 1 sein"
@@ -78,6 +78,6 @@ def text_bar_chart(values: dict[str, int], *, width: int = 24) -> list[str]:
     lines: list[str] = []
     for label, value in values.items():
         length = round(value / maximum * width) if maximum else 0
-        bar = "█" * length
+        bar = "#" * length
         lines.append(f"{label:<{label_width}} | {bar:<{width}} {value}")
     return lines
