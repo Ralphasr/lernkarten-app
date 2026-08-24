@@ -10,5 +10,6 @@ build/
 *.egg-info/
 *.tmp
 data/*.json
-!data/beispiel_deck.json
+.idea/
+.DS_Store
 
