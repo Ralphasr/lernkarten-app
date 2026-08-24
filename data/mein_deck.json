@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "id": "c1c5d9cc-3dec-404e-8ec8-867dce067fc4",
+  "name": "Python-Grundlagen",
+  "description": "Beispieldaten fuer den direkten Test aller Kartentypen.",
+  "cards": [
+    {
+      "id": "3e09419a-6206-49ba-9089-ec585329c047",
+      "topic": "Syntax",
+      "prompt": "Welches Schluesselwort definiert eine Funktion?",
+      "tags": [
+        "Funktionen"
+      ],
+      "created_at": "2026-08-17T16:46:13.323558Z",
+      "type": "question_answer",
+      "answer": "def"
+    },
+    {
+      "id": "2522f26b-6d37-43aa-9aad-245a62a88912",
+      "topic": "Datentypen",
+      "prompt": "Wie heisst der unveraenderliche Sequenztyp?",
+      "tags": [
+        "Sequenzen"
+      ],
+      "created_at": "2026-08-17T16:46:13.323964Z",
+      "type": "question_answer",
+      "answer": "tuple"
+    },
+    {
+      "id": "f1fe668c-8257-4ed9-92fc-c395390dbfaa",
+      "topic": "Datentypen",
+      "prompt": "Welcher Typ speichert eindeutige Werte ohne feste Reihenfolge?",
+      "tags": [
+        "Collections"
+      ],
+      "created_at": "2026-08-17T16:46:13.323983Z",
+      "type": "multiple_choice",
+      "choices": [
+        "list",
+        "set",
+        "tuple",
+        "str"
+      ],
+      "correct_index": 1
+    },
+    {
+      "id": "01af1579-5dd5-4119-85f0-30c28eb587a5",
+      "topic": "Werkzeuge",
+      "prompt": "Welches Werkzeug prueft Typannotationen statisch?",
+      "tags": [
+        "Qualitaet"
+      ],
+      "created_at": "2026-08-17T16:46:13.324000Z",
+      "type": "multiple_choice",
+      "choices": [
+        "ruff",
+        "pytest",
+        "mypy",
+        "rich"
+      ],
+      "correct_index": 2
+    },
+    {
+      "id": "29e88548-6a8e-4bfa-b88e-c7075162c72c",
+      "topic": "Datentypen",
+      "prompt": "Python-Listen sind veraenderlich.",
+      "tags": [],
+      "created_at": "2026-08-17T16:46:13.324011Z",
+      "type": "true_false",
+      "answer": true,
+      "explanation": "Elemente koennen hinzugefuegt, ersetzt und entfernt werden."
+    },
+    {
+      "id": "1bbae552-ded3-4afb-9081-d480e96d26ea",
+      "topic": "Syntax",
+      "prompt": "Ein Python-Block wird durch geschweifte Klammern begrenzt.",
+      "tags": [],
+      "created_at": "2026-08-17T16:46:13.324017Z",
+      "type": "true_false",
+      "answer": false,
+      "explanation": "Python verwendet Einrueckung zur Blockbildung."
+    },
+    {
+      "id": "ed5c073b-a320-4844-bd6d-e652381afe2c",
+      "topic": "Python_Beginners",
+      "prompt": "What does # mean?",
+      "tags": [],
+      "created_at": "2026-08-22T14:03:59.400719Z",
+      "type": "question_answer",
+      "answer": "They are comments in your program. The symbol is an octothorpe"
+    }
+  ],
+  "profiles": {
+    "Standard": {
+      "name": "Standard",
+      "progress": {}
+    }
+  },
+  "active_profile": "Standard",
+  "active_session": null,
+  "session_history": []
+}
