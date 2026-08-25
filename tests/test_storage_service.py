@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from lernkarten.cli import main
 from lernkarten.exceptions import DeckIOError, EmptySelectionError, InvalidDeckFileError
 from lernkarten.models import Card, Deck, QuestionAnswerCard, StudyOrder
 from lernkarten.service import StudyService
@@ -42,6 +43,78 @@ def test_repository_reports_missing_invalid_json_and_invalid_schema(tmp_path: Pa
     invalid_schema.write_text(json.dumps({"name": ""}), encoding="utf-8")
     with pytest.raises(InvalidDeckFileError, match="Deck-Daten"):
         DeckRepository(invalid_schema).load()
+
+
+def test_repository_normalizes_all_naive_datetimes_to_utc(tmp_path: Path) -> None:
+    """Naive timestamps from JSON become UTC across every persistent datetime field."""
+    path = tmp_path / "naive-datetimes.json"
+    card_id = "00000000-0000-0000-0000-000000000001"
+    timestamp = "2026-08-17T12:00:00"
+    session = {
+        "profile_name": "Standard",
+        "card_ids": [card_id],
+        "order": "fixed",
+        "current_index": 1,
+        "records": [
+            {
+                "card_id": card_id,
+                "correct": True,
+                "given_answer": "yes",
+                "answered_at": timestamp,
+            }
+        ],
+        "started_at": timestamp,
+        "completed_at": timestamp,
+    }
+    path.write_text(
+        json.dumps(
+            {
+                "name": "D",
+                "cards": [
+                    {
+                        "id": card_id,
+                        "type": "question_answer",
+                        "topic": "T",
+                        "prompt": "Ready?",
+                        "answer": "yes",
+                        "created_at": timestamp,
+                    }
+                ],
+                "profiles": {
+                    "Standard": {
+                        "name": "Standard",
+                        "progress": {
+                            card_id: {
+                                "due_at": timestamp,
+                                "last_reviewed_at": timestamp,
+                            }
+                        },
+                    }
+                },
+                "active_profile": "Standard",
+                "active_session": session,
+                "session_history": [session],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    assert main(["--file", str(path), "stats"]) == 0
+    deck = DeckRepository(path).load()
+    progress = deck.profile.progress[card_id]
+    assert deck.active_session is not None
+    timestamps = [
+        deck.cards[0].created_at,
+        progress.due_at,
+        progress.last_reviewed_at,
+        deck.active_session.started_at,
+        deck.active_session.completed_at,
+        deck.active_session.records[0].answered_at,
+        deck.session_history[0].started_at,
+        deck.session_history[0].completed_at,
+        deck.session_history[0].records[0].answered_at,
+    ]
+    assert all(value is not None and value.tzinfo is UTC for value in timestamps)
 
 
 def test_session_can_resume_and_updates_statistics(tmp_path: Path) -> None:

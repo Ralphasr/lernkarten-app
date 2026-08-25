@@ -11,7 +11,15 @@ from enum import StrEnum
 from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, field_validator, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    TypeAdapter,
+    field_validator,
+    model_validator,
+)
 
 from lernkarten.exceptions import CardNotFoundError
 
@@ -19,6 +27,16 @@ from lernkarten.exceptions import CardNotFoundError
 def utc_now() -> datetime:
     """Return the current timezone-aware UTC time."""
     return datetime.now(UTC)
+
+
+def normalize_utc(value: datetime) -> datetime:
+    """Interpret naive datetimes as UTC and convert aware datetimes to UTC."""
+    if value.tzinfo is None or value.utcoffset() is None:
+        return value.replace(tzinfo=UTC)
+    return value.astimezone(UTC)
+
+
+UtcDateTime = Annotated[datetime, AfterValidator(normalize_utc)]
 
 
 class CardType(StrEnum):
@@ -57,8 +75,8 @@ class CardProgress(AppModel):
     lapses: int = Field(default=0, ge=0)
     interval_days: int = Field(default=0, ge=0)
     ease_factor: float = Field(default=2.5, ge=1.3, le=3.0)
-    due_at: datetime = Field(default_factory=utc_now)
-    last_reviewed_at: datetime | None = None
+    due_at: UtcDateTime = Field(default_factory=utc_now)
+    last_reviewed_at: UtcDateTime | None = None
 
     @model_validator(mode="after")
     def correct_does_not_exceed_attempts(self) -> CardProgress:
@@ -116,7 +134,7 @@ class BaseCard(AppModel):
     topic: str = Field(min_length=1, max_length=100)
     prompt: str = Field(min_length=1, max_length=2_000)
     tags: list[str] = Field(default_factory=list, max_length=30)
-    created_at: datetime = Field(default_factory=utc_now)
+    created_at: UtcDateTime = Field(default_factory=utc_now)
 
     @field_validator("topic", "prompt")
     @classmethod
@@ -207,7 +225,7 @@ class ReviewRecord(AppModel):
     card_id: UUID
     correct: bool
     given_answer: str
-    answered_at: datetime = Field(default_factory=utc_now)
+    answered_at: UtcDateTime = Field(default_factory=utc_now)
     duration_seconds: float = Field(default=0.0, ge=0.0)
 
 
@@ -220,8 +238,8 @@ class StudySession(AppModel):
     order: StudyOrder
     current_index: int = Field(default=0, ge=0)
     records: list[ReviewRecord] = Field(default_factory=list)
-    started_at: datetime = Field(default_factory=utc_now)
-    completed_at: datetime | None = None
+    started_at: UtcDateTime = Field(default_factory=utc_now)
+    completed_at: UtcDateTime | None = None
 
     @model_validator(mode="after")
     def index_is_in_session(self) -> StudySession:
