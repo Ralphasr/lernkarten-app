@@ -11,6 +11,7 @@ from uuid import uuid4
 
 from pydantic import ValidationError
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 from rich.prompt import Confirm, IntPrompt, Prompt
 from rich.table import Table
@@ -101,7 +102,12 @@ def _card_table(cards: Sequence[Card]) -> Table:
     table.add_column("Typ")
     table.add_column("Vorderseite", overflow="fold")
     for index, card in enumerate(cards, start=1):
-        table.add_row(str(index), card.topic, TYPE_LABELS[card.type], card.prompt)
+        table.add_row(
+            str(index),
+            escape(card.topic),
+            TYPE_LABELS[card.type],
+            escape(card.prompt),
+        )
     return table
 
 
@@ -117,7 +123,7 @@ def _print_import_report(console: Console, report: ImportReport) -> None:
     """Display import totals and bounded per-row diagnostics."""
     console.print(f"[green]{report.imported} importiert[/green], {report.skipped} uebersprungen.")
     for error in report.errors[:10]:
-        console.print(f"[yellow]- {error}[/yellow]")
+        console.print(f"[yellow]- {escape(error)}[/yellow]")
     if len(report.errors) > 10:
         console.print(f"[yellow]... und {len(report.errors) - 10} weitere Hinweise.[/yellow]")
 
@@ -125,7 +131,10 @@ def _print_import_report(console: Console, report: ImportReport) -> None:
 def _print_statistics(console: Console, deck: Deck) -> None:
     """Display summary metrics and a seven-day activity chart."""
     stats = calculate_statistics(deck)
-    table = Table(title=f"Fortschritt - Profil {deck.active_profile}", header_style="bold green")
+    table = Table(
+        title=f"Fortschritt - Profil {escape(deck.active_profile)}",
+        header_style="bold green",
+    )
     table.add_column("Kennzahl")
     table.add_column("Wert", justify="right")
     table.add_row("Karten", str(stats.cards))
@@ -135,7 +144,10 @@ def _print_statistics(console: Console, deck: Deck) -> None:
     table.add_row("Erfolgsquote", f"{stats.success_rate:.1f} %")
     table.add_row("Abgeschlossene Sitzungen", str(stats.completed_sessions))
     console.print(table)
-    topic_values = dict(sorted(stats.by_topic.items(), key=lambda pair: pair[0].casefold()))
+    topic_values = {
+        escape(topic): count
+        for topic, count in sorted(stats.by_topic.items(), key=lambda pair: pair[0].casefold())
+    }
     if topic_values:
         console.print(Panel("\n".join(text_bar_chart(topic_values)), title="Karten nach Thema"))
     activity = activity_by_day(deck)
@@ -145,11 +157,13 @@ def _print_statistics(console: Console, deck: Deck) -> None:
 
 def _show_study_card(console: Console, card: Card, position: int, total: int) -> None:
     """Render one study prompt with type-specific answer choices."""
-    body = f"[bold]{card.prompt}[/bold]"
+    body = f"[bold]{escape(card.prompt)}[/bold]"
     if isinstance(card, MultipleChoiceCard):
-        options = "\n".join(f"  {index}. {choice}" for index, choice in enumerate(card.choices, 1))
+        options = "\n".join(
+            f"  {index}. {escape(choice)}" for index, choice in enumerate(card.choices, 1)
+        )
         body = f"{body}\n\n{options}"
-    console.print(Panel(body, title=f"{card.topic} - Karte {position}/{total}"))
+    console.print(Panel(body, title=f"{escape(card.topic)} - Karte {position}/{total}"))
 
 
 def _run_study(
@@ -194,14 +208,14 @@ def _run_study(
                 duration_seconds=time.monotonic() - started,
             )
         except InvalidAnswerError as error:
-            console.print(f"[yellow]{error}[/yellow]")
+            console.print(f"[yellow]{escape(str(error))}[/yellow]")
             continue
         repository.save(deck)
         style = "green" if correct else "red"
         verdict = "Richtig" if correct else "Leider falsch"
-        console.print(f"[{style}]{verdict}.[/{style}] Loesung: {expected_answer(card)}")
+        console.print(f"[{style}]{verdict}.[/{style}] Loesung: {escape(expected_answer(card))}")
         if isinstance(card, TrueFalseCard) and card.explanation:
-            console.print(f"[dim]{card.explanation}[/dim]")
+            console.print(f"[dim]{escape(card.explanation)}[/dim]")
     console.print(
         Panel(
             f"Richtig: {session.correct_count}/{len(session.records)}\n"
@@ -301,7 +315,9 @@ def _prompt_card(existing: Card | None = None) -> Card:
 
 def _manage_profiles(console: Console, repository: DeckRepository, deck: Deck) -> None:
     """List, create or switch independent user profiles."""
-    console.print(f"Profile: {', '.join(deck.profiles)} (aktiv: {deck.active_profile})")
+    console.print(
+        f"Profile: {escape(', '.join(deck.profiles))} (aktiv: {escape(deck.active_profile)})"
+    )
     action = Prompt.ask("Aktion", choices=["wechseln", "neu", "zurueck"], default="zurueck")
     if action == "wechseln":
         name = Prompt.ask("Profil", choices=list(deck.profiles), default=deck.active_profile)
@@ -324,7 +340,7 @@ def _manage_exchange(console: Console, repository: DeckRepository, deck: Deck) -
     path = Path(Prompt.ask("Dateipfad"))
     if action == "csv-export":
         export_csv(deck, path)
-        console.print(f"[green]CSV geschrieben: {path}[/green]")
+        console.print(f"[green]CSV geschrieben: {escape(str(path))}[/green]")
         return
     report = import_csv(deck, path) if action == "csv-import" else import_anki_package(deck, path)
     repository.save(deck)
@@ -334,7 +350,9 @@ def _manage_exchange(console: Console, repository: DeckRepository, deck: Deck) -
 def _interactive(console: Console, repository: DeckRepository) -> None:
     """Run the complete menu-driven Rich interface."""
     deck = repository.load_or_create()
-    console.print(Panel.fit(f"[bold cyan]{deck.name}[/bold cyan]", subtitle="Lernkarten-App"))
+    console.print(
+        Panel.fit(f"[bold cyan]{escape(deck.name)}[/bold cyan]", subtitle="Lernkarten-App")
+    )
     while True:
         console.print(
             "\n[bold]1[/bold] Karten  [bold]2[/bold] Hinzufuegen  [bold]3[/bold] Bearbeiten  "
@@ -359,7 +377,7 @@ def _interactive(console: Console, repository: DeckRepository) -> None:
         elif choice == "4":
             card = _select_card(console, deck)
             if card is not None and Confirm.ask(
-                f"'{card.prompt}' wirklich loeschen?", default=False
+                f"'{escape(card.prompt)}' wirklich loeschen?", default=False
             ):
                 deck.remove_card(card.id)
                 repository.save(deck)
@@ -400,12 +418,12 @@ def _dispatch(args: argparse.Namespace, console: Console) -> None:
     if command == "init":
         _require_absent(repository.path)
         repository.save(Deck(name=args.name))
-        console.print(f"[green]Deck angelegt: {repository.path}[/green]")
+        console.print(f"[green]Deck angelegt: {escape(str(repository.path))}[/green]")
         return
     if command == "demo":
         _require_absent(repository.path, force=args.force)
         repository.save(create_demo_deck())
-        console.print(f"[green]Beispieldeck geschrieben: {repository.path}[/green]")
+        console.print(f"[green]Beispieldeck geschrieben: {escape(str(repository.path))}[/green]")
         return
     deck = repository.load()
     if command == "list":
@@ -436,7 +454,7 @@ def _dispatch(args: argparse.Namespace, console: Console) -> None:
         _print_import_report(console, report)
     elif command == "export-csv":
         export_csv(deck, args.path)
-        console.print(f"[green]CSV geschrieben: {args.path}[/green]")
+        console.print(f"[green]CSV geschrieben: {escape(str(args.path))}[/green]")
     elif command == "import-anki":
         report = import_anki_package(deck, args.path, topic=args.topic)
         repository.save(deck)
@@ -458,7 +476,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         _dispatch(args, console)
         return 0
     except (LernkartenError, ValidationError, ValueError) as error:
-        console.print(f"[bold red]Fehler:[/bold red] {error}")
+        console.print(f"[bold red]Fehler:[/bold red] {escape(str(error))}")
         return 2
     except (KeyboardInterrupt, EOFError):
         console.print(
