@@ -33,7 +33,11 @@ def calculate_statistics(deck: Deck) -> DeckStatistics:
     correct = sum(progress.correct for progress in deck.profile.progress.values())
     rate = round(correct / attempts * 100, 1) if attempts else 0.0
     now = utc_now()
-    due = sum(deck.profile.progress_for(card.id).due_at <= now for card in deck.cards)
+    due = 0
+    for card in deck.cards:
+        progress = deck.profile.progress.get(str(card.id))
+        if progress is None or progress.due_at <= now:
+            due += 1
     return DeckStatistics(
         cards=len(deck.cards),
         attempts=attempts,

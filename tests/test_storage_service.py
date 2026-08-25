@@ -1,7 +1,7 @@
 """Integration tests for persistence and resumable learning sessions."""
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -140,6 +140,35 @@ def test_session_can_resume_and_updates_statistics(tmp_path: Path) -> None:
     assert (stats.attempts, stats.correct, stats.success_rate) == (2, 1, 50.0)
     assert stats.completed_sessions == 1
     assert activity_by_day(resumed, days=1, end=datetime(2026, 8, 17).date()).popitem()[1] == 2
+
+
+def test_statistics_treats_new_card_as_due_without_mutating_deck() -> None:
+    """A fresh card is due while statistics remain a read-only operation."""
+    card = QuestionAnswerCard(topic="T", prompt="new", answer="yes")
+    deck = Deck(name="D", cards=[card])
+    before = deck.model_copy(deep=True)
+
+    stats = calculate_statistics(deck)
+
+    assert stats.due_cards == 1
+    assert deck == before
+    assert deck.profile.progress == {}
+
+
+def test_statistics_uses_existing_due_dates_without_mutating_deck() -> None:
+    """Existing progress is evaluated as overdue or future without side effects."""
+    now = datetime.now(UTC)
+    overdue = QuestionAnswerCard(topic="T", prompt="overdue", answer="yes")
+    future = QuestionAnswerCard(topic="T", prompt="future", answer="no")
+    deck = Deck(name="D", cards=[overdue, future])
+    deck.profile.progress_for(overdue.id).due_at = now - timedelta(days=1)
+    deck.profile.progress_for(future.id).due_at = now + timedelta(days=1)
+    before = deck.model_copy(deep=True)
+
+    stats = calculate_statistics(deck)
+
+    assert stats.due_cards == 1
+    assert deck == before
 
 
 def test_completed_sessions_are_counted_for_active_profile_only() -> None:
