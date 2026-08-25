@@ -159,7 +159,7 @@ Stand der mitgelieferten Version:
 
 | Prüfung |                           Ergebnis |
 |---|-----------------------------------:|
-| pytest inkl. Doctests |                       53 bestanden |
+| pytest inkl. Doctests |                       55 bestanden |
 | Hypothesis | 2 generative Eigenschaften geprüft |
 | Testabdeckung |      75 % (inkl. interaktiver CLI) |
 | mypy `--strict` |                           0 Fehler |

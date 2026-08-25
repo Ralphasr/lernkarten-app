@@ -171,7 +171,7 @@ Status of the included version:
 
 | Check |                            Result |
 |---|----------------------------------:|
-| pytest including doctests |                         53 passed |
+| pytest including doctests |                         55 passed |
 | Hypothesis |    2 generative properties tested |
 | Test coverage | 75% including the interactive CLI |
 | mypy `--strict` |                          0 errors |
