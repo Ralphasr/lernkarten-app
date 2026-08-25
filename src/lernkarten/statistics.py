@@ -40,7 +40,9 @@ def calculate_statistics(deck: Deck) -> DeckStatistics:
         correct=correct,
         success_rate=rate,
         due_cards=due,
-        completed_sessions=len(deck.session_history),
+        completed_sessions=sum(
+            session.profile_name == deck.active_profile for session in deck.session_history
+        ),
         by_type=dict(Counter(card.type for card in deck.cards)),
         by_topic=dict(Counter(card.topic for card in deck.cards)),
     )

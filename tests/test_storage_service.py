@@ -142,6 +142,35 @@ def test_session_can_resume_and_updates_statistics(tmp_path: Path) -> None:
     assert activity_by_day(resumed, days=1, end=datetime(2026, 8, 17).date()).popitem()[1] == 2
 
 
+def test_completed_sessions_are_counted_for_active_profile_only() -> None:
+    """A completed session contributes only to the profile that studied it."""
+    card = QuestionAnswerCard(topic="T", prompt="2+2?", answer="4")
+    deck = Deck(name="D", cards=[card])
+    deck.add_profile("A")
+    deck.add_profile("B")
+    service = StudyService(deck)
+    service.start_session(order=StudyOrder.FIXED)
+    assert service.submit_answer("4", answered_at=datetime(2026, 8, 17, tzinfo=UTC))
+
+    deck.active_profile = "A"
+    profile_a = calculate_statistics(deck)
+    assert (
+        profile_a.completed_sessions,
+        profile_a.attempts,
+        profile_a.correct,
+        profile_a.success_rate,
+    ) == (0, 0, 0, 0.0)
+
+    deck.active_profile = "B"
+    profile_b = calculate_statistics(deck)
+    assert (
+        profile_b.completed_sessions,
+        profile_b.attempts,
+        profile_b.correct,
+        profile_b.success_rate,
+    ) == (1, 1, 1, 100.0)
+
+
 def test_empty_session_selection_and_invalid_chart_arguments() -> None:
     """Preconditions reject meaningless operations early."""
     service = StudyService(Deck(name="D"))
