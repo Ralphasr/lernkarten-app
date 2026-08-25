@@ -169,15 +169,15 @@ uv run interrogate src
 
 Status of the included version:
 
-| Check | Result |
-|---|---:|
-| pytest including doctests | 46 passed |
-| Hypothesis | 2 generative properties tested |
-| Test coverage | 70% including the interactive CLI |
-| mypy `--strict` | 0 errors |
-| ruff check | 0 warnings |
-| ruff format `--check` | no changes |
-| interrogate | 100% |
+| Check |                            Result |
+|---|----------------------------------:|
+| pytest including doctests |                         53 passed |
+| Hypothesis |    2 generative properties tested |
+| Test coverage | 75% including the interactive CLI |
+| mypy `--strict` |                          0 errors |
+| ruff check |                        0 warnings |
+| ruff format `--check` |                        no changes |
+| interrogate |                              100% |
 
 The test suite covers all card types, invalid models, searching and filtering,
 answer grading, scheduling, profiles, session resumption, JSON errors, CSV

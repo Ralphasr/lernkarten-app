@@ -6,6 +6,15 @@ Alle wesentlichen Änderungen an diesem Projekt werden in dieser Datei dokumenti
 
 Derzeit sind keine weiteren Änderungen geplant.
 
+## [1.0.1] - 2026-08-25
+
+### Behoben
+
+- neue Karten werden unmittelbar im Fälligkeitsfilter berücksichtigt
+- gespeicherte Datumswerte werden zeitzonensicher validiert
+- abgeschlossene Sitzungen werden dem richtigen Benutzerprofil zugeordnet
+- Rich-Steuerzeichen in Kartentexten führen nicht mehr zum Programmabbruch
+
 ## [1.0.0] - 2026-08-24
 
 ### Funktionen

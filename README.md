@@ -157,15 +157,15 @@ uv run interrogate src
 
 Stand der mitgelieferten Version:
 
-| Prüfung | Ergebnis |
-|---|---:|
-| pytest inkl. Doctests | 46 bestanden |
+| Prüfung |                           Ergebnis |
+|---|-----------------------------------:|
+| pytest inkl. Doctests |                       53 bestanden |
 | Hypothesis | 2 generative Eigenschaften geprüft |
-| Testabdeckung | 70 % (inkl. interaktiver CLI) |
-| mypy `--strict` | 0 Fehler |
-| ruff check | 0 Hinweise |
-| ruff format --check | keine Änderungen |
-| interrogate | 100 % |
+| Testabdeckung |      75 % (inkl. interaktiver CLI) |
+| mypy `--strict` |                           0 Fehler |
+| ruff check |                         0 Hinweise |
+| ruff format --check |                   keine Änderungen |
+| interrogate |                              100 % |
 
 Die Tests umfassen alle Kartentypen, ungültige Modelle, Suche/Filter, Antwortauswertung,
 Terminplanung, Profile, Sitzungsfortsetzung, JSON-Fehler, CSV-Roundtrip, einen echten
