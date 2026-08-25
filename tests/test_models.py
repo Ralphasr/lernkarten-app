@@ -73,6 +73,17 @@ def test_missing_card_uses_domain_exception() -> None:
         Deck(name="D").get_card(uuid4())
 
 
+def test_due_filter_treats_new_card_as_due_without_creating_progress() -> None:
+    """An unseen card is immediately due and filtering remains read-only."""
+    now = datetime(2026, 8, 17, tzinfo=UTC)
+    card = QuestionAnswerCard(topic="T", prompt="new", answer="yes")
+    deck = Deck(name="D", cards=[card])
+
+    assert deck.profile.progress == {}
+    assert deck.search(due_only=True, now=now) == [card]
+    assert deck.profile.progress == {}
+
+
 def test_due_filter_uses_active_profile() -> None:
     """Due selection compares timezone-aware dates from the active profile."""
     now = datetime(2026, 8, 17, tzinfo=UTC)

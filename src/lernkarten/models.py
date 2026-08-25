@@ -369,8 +369,10 @@ class Deck(AppModel):
                 continue
             if card_type is not None and card.type != card_type:
                 continue
-            if due_only and self.profile.progress_for(card.id).due_at > comparison_time:
-                continue
+            if due_only:
+                progress = self.profile.progress.get(str(card.id))
+                if progress is not None and progress.due_at > comparison_time:
+                    continue
             selected.append(card)
         return selected
 
